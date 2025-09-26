@@ -1,0 +1,141 @@
+import React, { useState } from "react";
+const moods = [
+  { label: "Happy", emoji: "😊", color: "#FFD93D" },
+  { label: "Sad", emoji: "😢", color: "#4A90E2" },
+  { label: "Energetic", emoji: "⚡", color: "#F95738" },
+  { label: "Tired", emoji: "😴", color: "#6C757D" },
+  { label: "Neutral", emoji: "😐", color: "#A0AEC0" },
+];
+const dashboardStyle = {
+  fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+  maxWidth: "480px",
+  margin: "50px auto",
+  backgroundColor: "#f0f4f8",
+  padding: "30px",
+  borderRadius: "12px",
+  boxShadow: "0 6px 20px rgba(0,0,0,0.1)",
+  textAlign: "center",
+};
+const headerStyle = {
+  marginBottom: "20px",
+  color: "#333",
+};
+const moodButtonStyle = (color, selected) => ({
+  fontSize: "30px",
+  padding: "15px",
+  margin: "5px",
+  borderRadius: "50%",
+  border: selected ? `3px solid ${color}` : "2px solid transparent",
+  cursor: "pointer",
+  backgroundColor: selected ? "#fff" : color,
+  color: selected ? color : "#fff",
+  boxShadow: selected ? `0 0 10px ${color}` : "none",
+  transition: "all 0.3s ease",
+  userSelect: "none",
+});
+const dayBoxStyle = (color) => ({
+  flex: "1",
+  margin: "0 4px",
+  padding: "15px 0",
+  borderRadius: "8px",
+  backgroundColor: color || "#e2e8f0",
+  color: color ? "#333" : "#888",
+  fontSize: "28px",
+  userSelect: "none",
+});
+const statsContainer = {
+  marginTop: "25px",
+  textAlign: "left",
+};
+const statRow = {
+  display: "flex",
+  alignItems: "center",
+  marginBottom: "10px",
+};
+const statColorBox = (color) => ({
+  width: "25px",
+  height: "25px",
+  borderRadius: "5px",
+  backgroundColor: color,
+  marginRight: "10px",
+});
+const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+export default function MoodTracker() {
+  // last 7 days moods stored as array of mood label or null (starting Mon)
+  const [moodLog, setMoodLog] = useState(Array(7).fill(null));
+  const [selectedMood, setSelectedMood] = useState(null);
+// Get current weekday index (0=Mon,...6=Sun)
+  const todayIndex = (new Date().getDay() + 6) % 7;
+const setMoodForToday = () => {
+    if (!selectedMood) return alert("Please select a mood first");
+    const newLog = [...moodLog];
+    newLog[todayIndex] = selectedMood;
+    setMoodLog(newLog);
+  };
+// Count frequencies of moods logged
+  const freq = moods.reduce((acc, mood) => {
+    acc[mood.label] = moodLog.filter((m) => m === mood.label).length;
+    return acc;
+  }, {});
+return (
+    <div style={dashboardStyle}>
+      <h2 style={headerStyle}>Daily Mood Tracker</h2>
+      <div>
+        {moods.map(({ label, emoji, color }) => (
+          <button
+            key={label}
+            style={moodButtonStyle(color, selectedMood === label)}
+            onClick={() => setSelectedMood(label)}
+            title={label}
+          >
+            {emoji}
+          </button>
+        ))}
+      </div>
+      <button
+        style={{
+          marginTop: "20px",
+          padding: "12px 30px",
+          borderRadius: "8px",
+          border: "none",
+          backgroundColor: "#4A90E2",
+          color: "#fff",
+          cursor: "pointer",
+          fontWeight: "600",
+          fontSize: "16px",
+        }}
+        onClick={setMoodForToday}
+      >
+        Log Today's Mood
+      </button>
+      <h3 style={{ marginTop: "35px", marginBottom: "12px", color: "#555" }}>
+        Last 7 Days Mood
+      </h3>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        {days.map((day, idx) => {
+          const moodLabel = moodLog[idx];
+          const mood = moods.find((m) => m.label === moodLabel);
+          return (
+            <div key={day} style={{ flex: 1, margin: "0 2px" }}>
+              <div style={dayBoxStyle(mood?.color)} title={moodLabel || "No mood logged"}>
+                {mood?.emoji || "—"}
+              </div>
+              <div style={{ marginTop: "5px", fontSize: "12px", color: "#666" }}>{day}</div>
+            </div>
+          );
+        })}
+      </div>
+      <div style={statsContainer}>
+        <h3 style={{ marginBottom: "10px" }}>Mood Frequency</h3>
+        {moods.map(({ label, color }) => (
+          <div key={label} style={statRow}>
+            <div style={statColorBox(color)}></div>
+            <div>
+              {label}: <strong>{freq[label]}</strong> day{freq[label] !== 1 ? "s" : ""}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
